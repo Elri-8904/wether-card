@@ -1,0 +1,154 @@
+<!--**暫時記事區**
+      https://www.w3schools.com/howto/howto_js_filter_elements.asp
+      for foreach
+      https://www.casper.tw/development/2020/10/05/js-for-loop-vs-for-each/
+
+
+      還有台灣地圖版本ㄉ，家U!
+      
+    -->
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet"  href="./css/weather_card.css">
+        <title>天氣預報</title>
+    </head>
+    <body>
+          
+        <main>
+          <nav> <!-- all 為字串，其他不是，這樣的話all不用再打一大串const陣列就直接抓全部就行-->
+                <div class=" btn radius" onclick="filter2('all')" >全臺</div>
+                <div class=" btn radius" onclick="filter2(north)" >北部地區</div>
+                <div class=" btn radius" onclick="filter2(west)" >中部地區</div>
+                <div class=" btn radius" onclick="filter2(east)" >東部地區</div>
+                <div class=" btn radius" onclick="filter2(south)" >南部地區</div>
+                <div class=" btn radius" onclick="filter2(islands)">離島地區</div>
+           </nav>
+           <div class="container">
+            
+              
+            
+           </div> 
+        </main>
+    
+        <script>
+          const btn = document.querySelector('.btn')
+          const container = document.querySelector('.container')
+          const north = ['臺北市','新北市','基隆市','新竹市','桃園市','新竹縣','宜蘭縣']
+          const west = ['苗栗縣','臺中市','彰化縣','南投縣','南投縣','雲林縣']
+          const east = ['臺東縣','花蓮縣']
+          const south = ['嘉義市','嘉義縣','臺南市','高雄市','屏東縣','澎湖縣']
+          const islands = ['金門縣','連江縣']
+          var locations
+
+          function render(citydata){
+            let locationName =citydata.locationName
+            let minTemp = citydata.weatherElement[2].time[0].parameter.parameterName
+            let maxTemp = citydata.weatherElement[4].time[0].parameter.parameterName
+            let rain = citydata.weatherElement[1].time[0].parameter.parameterName
+            let feel = citydata.weatherElement[3].time[0].parameter.parameterName
+            //降雨機率<25%為晴天.gif，小於50%為陰天.gif，大於50%(else)為雨天.gif
+            let imgPath
+            if (rain < 25){
+              imgPath = './img/icons8-sun.gif' 
+            }
+            else if(rain <= 50){
+              imgPath = './img/icons8-partly-cloudy-day.gif'
+            }
+            else {
+              imgPath = './img/icons8-rain.gif'
+            }
+            //container.innerHTML= container.innerHTML  => container.innerHTML+=
+            //*加號* *加號*記得加!!!!!!不要再搞自己了( ˘•ω•˘ )
+            container.innerHTML+= `
+            <div class=" card " data-city="${locationName}">
+            <div class=" pic">
+                  <img class="weather_img  " src="${imgPath}" alt="">
+              </div>
+              <div class=" text">
+                      <h3>${locationName}</h3>
+                      <p>溫度 : ${minTemp}°C ~ ${maxTemp}°C</p>
+                      <p>舒適度: ${feel} </p>
+                      <p>降雨機率 : ${rain} </p>
+              </div> </div>` 
+          }
+          
+          //抓取資料
+          fetch('https://opendata.cwb.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWB-AA300EC1-31BA-465E-B669-6CA2C320A195')
+              .then(function(response) {
+                return response.json();
+              })
+              .then(function(weather) { 
+                  locations = weather.records.location
+                  //.records.location 為須經過路徑
+                  locations.forEach(element =>{
+                    render(element)
+          }); 
+        }); 
+         // //法1:做好卡片，但只顯示需要的卡片
+         // function filter2(areas){
+         //     var allcity = document.querySelectorAll('.card')
+         //     //叫城市都出來!!
+         //     allcity.forEach(city =>{
+         //       if (areas == 'all'){
+         //         //display=block
+         //           city.style.display = 'block'
+         //       }
+         //       else{
+         //             //先假設所有城市都不顯示
+         //             city.style.display = 'none'
+         //             areas.forEach(areas=>{
+         //                 //條件拿出來比較, 任何一個縣市符合就顯示
+         //                 if (city.dataset.city == areas){
+         //                     city.style.display = 'block'
+         //                 }
+         //             })
+         //         }
+         //     });
+         // }
+            //法2:只把要的卡片做出來顯示，不做多餘的卡片
+      //   function filter2(areas) {
+      //      //清空上次的搜尋結果
+      //      container.innerHTML = ''
+
+      //      // 必須要取得 原始的資料  跟 條件做比較
+      //      locations.forEach(citydata => {
+      //          if (areas == 'all') {
+      //              render(citydata)
+      //          } else {
+      //              areas.forEach(target => {
+      //                  if (citydata.locationName == target) {
+      //                      render(citydata)
+      //                  }
+      //              })
+      //          }
+      //      })
+      //  }
+      
+      //for版本
+      function filter2(areas){
+        container.innerHTML=''
+        for(index=0 ; index < locations.length ; index++){
+          const citydata=locations[index]
+          if(areas == 'all'){
+            render(citydata)
+          }
+          else{
+            for(i=0 ; i < areas.length ; i++){
+              const target=areas[i]
+              if (citydata.locationName == target) {
+                render(citydata)
+              }
+          }
+        }
+      }}
+          
+  
+  
+        </script>
+        
+    </body>
+    </html>
